@@ -23,21 +23,19 @@ io.on('connection', function (socket) {
   socket.send({title:"socketid", data:socket.id});
 
   socket.on('subscribe', function (data) {
-    console.log(data, socket.id);
-    if (sockets[data.user_id] && sockets[data.user_id].id) {
-      if (sockets[data.user_id].room && sockets[data.user_id].room.length > 0) {
-        sockets[socket.username].room = sockets[data.user_id].room;
-      } else {
-        sockets[data.user_id].room = socket.id.replace("/#", "") + 'v' + sockets[data.user_id].id.replace("/#", "");
-      }
-      socket.join(sockets[data.user_id].room);
-      socket.broadcast.emit("room_id", {room: sockets[data.user_id].room, index: data.user_index, current_user: data.current_user});
-    }
+    socket.join();
+    socket.broadcast.emit("room_id", {index: data.user_index, user_id: data.user_id, current_user: data.current_user, current_index: data.current_index});
   });
 
   socket.on('new message', function (data) {
     console.log(data);
-    io.sockets.emit(data.room).emit('private message', data.message);
+    io.sockets.emit(data.target_user_id).emit('private message', data.message);
+  });
+
+  socket.on('notification', function(data) {
+    io.sockets.emit(data.target_user_id).emit('new notification', data);
+    console.log(data);
+    console.log(sockets);
   });
 
   // when the client emits 'add user', this listens and executes
