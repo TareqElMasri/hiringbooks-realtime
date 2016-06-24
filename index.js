@@ -22,9 +22,8 @@ io.on('connection', function (socket) {
   socket.send({title:"onlineUsers", data:onlineUsers});
   socket.send({title:"socketid", data:socket.id});
 
-  socket.on('subscribe', function (data) {
-    socket.join();
-    socket.broadcast.emit("room_id", {index: data.user_index, user_id: data.user_id, current_user: data.current_user, current_index: data.current_index});
+  socket.on('subscribe', function (id) {
+    socket.join(id);
   });
 
   socket.on('new message', function (data) {
@@ -60,12 +59,12 @@ io.on('connection', function (socket) {
 
   // when the client emits 'typing', we broadcast it to others
   socket.on('typing', function (data) {
-    socket.broadcast.emit('user_typing', data);
+    io.sockets.emit(data.target_user_id).emit('user_typing', data);
   });
 
   // when the client emits 'stop typing', we broadcast it to others
   socket.on('stop typing', function (data) {
-    socket.broadcast.emit('user_stop_typing', data);
+    io.sockets.emit(data.target_user_id).emit('user_stop_typing', data);
   });
 
   // when the user disconnects.. perform this
